@@ -2,6 +2,7 @@ package smartgrids;
 
 import java.util.List;
 import java.util.Map;
+import smartgrids.Plantas.*;
 
 public class SmartGrids implements ISmartGrids {
 
