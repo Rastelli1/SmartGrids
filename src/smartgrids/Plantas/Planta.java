@@ -1,5 +1,5 @@
 package smartgrids.Plantas;
-
+import smartgrid.Monitoreos.Monitoreo;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,12 +71,14 @@ public abstract class Planta {
 	
 	public abstract double  generacionMinimaParaCumplirCuota() ;
 	
-	/*@Override
-	public boolean cumpleCuota(Monitoreo) {}*/
+	
+	public boolean cumpleCuota(Monitoreo monitoreo) { /* Este metodo se encarga de verificar si la energia generada por x planta cumple la cuota minima, true si cumple y false si no cumple*/
+		return monitoreo.EnergiaGenerada() >= generacionMinimaParaCumplirCuota();
+	}
 	
 	public  abstract boolean esRenovable();
 	
-    public boolean estuvoInactivaEn(LocalDateTime momento) {
+    public boolean estuvoInactivaEn(LocalDateTime momento) { /*Este metodo se encarga de buscar en los periodos de inactividad si estuvo inactiva en x momento, si no lo encuentro devuleve false ( estaba activa)*/ 
     	
         for (PeriodosInactividad periodo : periodos) {
         	
@@ -86,7 +88,6 @@ public abstract class Planta {
     }
 	@Override
     public String toString() {
-        return nombre + " (" + (activa ? "ACTIVA" : "INACTIVA") + "): "
-                + fechaPuestaEnFuncionamiento;
+        return nombre + " (" + (activa ? "ACTIVA" : "INACTIVA") + "): " + fechaPuestaEnFuncionamiento;
     }
 }

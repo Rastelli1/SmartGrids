@@ -2,6 +2,9 @@ package smartgrids.Plantas;
 
 import java.time.LocalDateTime;
 
+import smartgrid.Monitoreos.Monitoreo;
+import smartgrid.Monitoreos.MonitoreoTermico;
+
 public class Termica extends Planta{
 	
 	private String tipoDeCombustible;
@@ -31,6 +34,14 @@ public class Termica extends Planta{
 	@Override
 	public double generacionMinimaParaCumplirCuota() {
 		return capacidadMaxima/2;
+	}
+	@Override
+	public boolean cumpleCuota(Monitoreo monitoreo) { /*Como Termico tiene una forma distinta de cumplir cuota se sobrescribe la funcion, se verifica que el monitoreo sea si o si del monitoreoTermico*/
+		if (monitoreo instanceof MonitoreoTermico==false) {throw new RuntimeException("Una planta termica necesita un monitoreo termico");}
+		
+		MonitoreoTermico termico= (MonitoreoTermico) monitoreo;
+		
+		return super.cumpleCuota(monitoreo)&& termico.Co2Emitido()<this.objetivoEmisionCO2hora;
 	}
 
 	@Override
