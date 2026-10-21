@@ -30,5 +30,4 @@ public class Solar  extends PlantaRenovable{
 
 		return capacidadMaxima * eficienciaPromedio * horasRadiacionDiaria / 24;
 	}
-
-}
+};

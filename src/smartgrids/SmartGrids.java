@@ -1,24 +1,50 @@
 package smartgrids;
 
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+
 import smartgrids.Plantas.*;
 
 public class SmartGrids implements ISmartGrids {
+	
+	HashMap<String, Planta> plantas = new HashMap<String, Planta>();
 
+	private LocalDateTime parsearhora(String fechaHora) {
+		if(fechaHora==null)
+			throw new RuntimeException("debe ser una fecha y una hora valida");
+		return LocalDateTime.parse(fechaHora);
+	}
+	
+	private Planta buscarPlanta(String nombre) {
+        Planta planta = plantas.get(nombre);
+        if (planta == null)
+            throw new RuntimeException("No existe la planta " + nombre);
+        return planta;
+    }
+	
+	private void agregarPlanta(Planta planta) {
+		if(plantas.containsKey(planta.nombre()))
+			throw new RuntimeException("Ya existe una planta con ese nombre");
+		plantas.put(planta.nombre(), planta);
+	}
+	
 	@Override
 	public void registrarPlantaSolar(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			double superficieCubierta, int cantidadPaneles, double horasRadiacionDiaria) {
-		// TODO Auto-generated method stub
-
+		agregarPlanta(new Solar(nombre, direccion, capacidadMaxima,parsearhora(fechaHoraPuestaEnFuncionamiento), fuentePrimaria, eficienciaPromedio, superficieCubierta, cantidadPaneles, horasRadiacionDiaria));
 	}
 
 	@Override
 	public void registrarPlantaEolica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadAerogeneradores, double alturaTorres, double velocidadMinimaViento) {
-		// TODO Auto-generated method stub
+		agregarPlanta(new Eolica(nombre, direccion, capacidadMaxima, parsearhora(fechaHoraPuestaEnFuncionamiento), fuentePrimaria, eficienciaPromedio, cantidadAerogeneradores, alturaTorres, velocidadMinimaViento));
 
 	}
 
@@ -26,7 +52,7 @@ public class SmartGrids implements ISmartGrids {
 	public void registrarPlantaHidraulica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadTurbinas, double capacidadEmbalse) {
-		// TODO Auto-generated method stub
+		agregarPlanta(new Hidraulica(nombre, direccion, capacidadMaxima, parsearhora(fechaHoraPuestaEnFuncionamiento), fuentePrimaria, eficienciaPromedio, cantidadTurbinas, capacidadEmbalse));
 
 	}
 
@@ -34,20 +60,21 @@ public class SmartGrids implements ISmartGrids {
 	public void registrarPlantaTermica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String tipoCombustible, double objetivoEmisionesCo2PorHora,
 			double capacidadAlmacenamientoCombustible) {
-		// TODO Auto-generated method stub
+		agregarPlanta(new Termica(nombre, direccion, capacidadMaxima, parsearhora(fechaHoraPuestaEnFuncionamiento), tipoCombustible, objetivoEmisionesCo2PorHora, capacidadAlmacenamientoCombustible));
 
 	}
 
 	@Override
 	public List<String> consultarPlantas() {
-		// TODO Auto-generated method stub
-		return null;
+	        List<String> plantaslista = new ArrayList<>();
+	        for (Planta planta : plantas.values())
+	            plantaslista.add(planta.toString());
+	        return plantaslista;
 	}
 
 	@Override
 	public double capacidadMinimaCuota(String nombre) {
-		// TODO Auto-generated method stub
-		return 0;
+		 return buscarPlanta(nombre).generacionMinimaParaCumplirCuota();
 	}
 
 	@Override
@@ -90,7 +117,7 @@ public class SmartGrids implements ISmartGrids {
 
 	@Override
 	public double totalGenerado(String nombre) {
-		// TODO Auto-generated method stub
+	
 		return 0;
 	}
 
@@ -107,9 +134,19 @@ public class SmartGrids implements ISmartGrids {
 	}
 
 	@Override
-	public Map<String, Integer> plantasRenovablesPorFuente() {
-		// TODO Auto-generated method stub
-		return null;
+	public TreeMap<String, Integer> plantasRenovablesPorFuente() {
+		TreeMap<String, Integer> porFuente = new TreeMap<>();
+		for (Planta p : plantas.values()) {
+			if (p.esRenovable()) {
+				String fuente = ((PlantaRenovable)p).fuentePrimaria();
+				if (porFuente.containsKey(fuente)) {
+				    porFuente.put(fuente, porFuente.get(fuente) + 1);
+				} else {
+				    porFuente.put(fuente, 1);
+				}
+			}
+		}
+		return porFuente;
 	}
 
 	@Override
