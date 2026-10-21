@@ -1,7 +1,9 @@
 package smartgrids.Plantas;
 import smartgrid.Monitoreos.Monitoreo;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class Planta {
@@ -34,6 +36,23 @@ public abstract class Planta {
 		this.activa=true;
 		this.fechaPuestaEnFuncionamiento=fechaPuestaEnFuncionamiento;
 		this.periodos=new ArrayList<>();
+	}
+	
+	protected HashMap<LocalDateTime, Monitoreo> monitoreos = new HashMap<LocalDateTime,Monitoreo>();
+	
+	public void registrarMonitoreo(LocalDateTime fechaHora, Monitoreo monitoreo) {
+	    if (fechaHora == null || monitoreo == null)
+	        throw new RuntimeException("El monitoreo y su fecha son obligatorios");
+	    if (!activa)
+	        throw new RuntimeException("La planta esta inactiva");
+	    if (fechaHora.isBefore(fechaPuestaEnFuncionamiento))
+	        throw new RuntimeException("La fecha es anterior a la puesta en funcionamiento");
+
+	    LocalDateTime hora = fechaHora.truncatedTo(ChronoUnit.HOURS);
+	    if (monitoreos.containsKey(hora))
+	        throw new RuntimeException("Ya existe un registro para esa hora");
+
+	    monitoreos.put(hora, monitoreo);
 	}
 	
 	public String nombre() {return nombre;}
