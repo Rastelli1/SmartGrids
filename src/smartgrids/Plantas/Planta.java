@@ -38,7 +38,7 @@ public abstract class Planta {
 		this.periodos=new ArrayList<>();
 	}
 	
-	protected HashMap<LocalDateTime, Monitoreo> monitoreos = new HashMap<>();
+	protected HashMap<LocalDateTime, Monitoreo> monitoreos = new HashMap<LocalDateTime,Monitoreo>();
 	
 	public void registrarMonitoreo(LocalDateTime fechaHora, Monitoreo monitoreo) {
 	    if (fechaHora == null || monitoreo == null)
