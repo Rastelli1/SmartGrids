@@ -93,7 +93,7 @@ public abstract class Planta {
 		
 		if (activa==true){ throw new RuntimeException("La planta ya esta activa"); }
 		
-		activa=false;
+		activa=true;
 		periodos.get(periodos.size()-1).renudarActividad(fechaHora);
 	}
 	
