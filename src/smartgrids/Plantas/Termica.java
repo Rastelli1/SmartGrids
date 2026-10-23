@@ -49,6 +49,9 @@ public class Termica extends Planta{
 		return false;
 	}
 	
-	
+	@Override
+	public boolean aceptaMonitoreo(Monitoreo monitoreo) {
+		return monitoreo instanceof MonitoreoTermico;
+	}
 
 }

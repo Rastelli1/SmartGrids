@@ -1,6 +1,9 @@
 package smartgrids.Plantas;
 import smartgrid.Monitoreos.Monitoreo;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,11 +43,17 @@ public abstract class Planta {
 	
 	protected HashMap<LocalDateTime, Monitoreo> monitoreos = new HashMap<LocalDateTime,Monitoreo>();
 	
+	public boolean aceptaMonitoreo(Monitoreo monitoreo) {
+		return monitoreo.getClass() == Monitoreo.class;
+	}
+	
 	public void registrarMonitoreo(LocalDateTime fechaHora, Monitoreo monitoreo) {
 	    if (fechaHora == null || monitoreo == null)
 	        throw new RuntimeException("El monitoreo y su fecha son obligatorios");
 	    if (!activa)
 	        throw new RuntimeException("La planta esta inactiva");
+	    if (!aceptaMonitoreo(monitoreo))
+	        throw new RuntimeException("Tipo de monitoreo incorrecto para la planta " + nombre);
 	    if (fechaHora.isBefore(fechaPuestaEnFuncionamiento))
 	        throw new RuntimeException("La fecha es anterior a la puesta en funcionamiento");
 
@@ -107,6 +116,47 @@ public abstract class Planta {
     }
 	@Override
     public String toString() {
-        return nombre + " (" + (activa ? "ACTIVA" : "INACTIVA") + "): " + fechaPuestaEnFuncionamiento;
+        return nombre + " (" + (activa ? "ACTIVA" : "INACTIVA") + "): " + fechaPuestaEnFuncionamiento.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
+
+	public double totalGenerado() {
+		double total = 0;
+		for (Monitoreo m : monitoreos.values())
+			total += m.EnergiaGenerada();
+		return total;
+	}
+
+	public int[] incidenciasPorHora() {
+		int[] porHora = new int[24];
+		for (Monitoreo m : monitoreos.values())
+			porHora[m.FechaHora().getHour()] += m.CantidadIncidencias();
+		return porHora;
+	}
+
+	public int[] histogramaCumplimiento(LocalDate desde, LocalDate hasta) {
+		int[] porHora = new int[24];
+		for (Monitoreo m : monitoreos.values()) {
+			LocalDate dia = m.FechaHora().toLocalDate();
+			if (!dia.isBefore(desde) && !dia.isAfter(hasta) && cumpleCuota(m))
+				porHora[m.FechaHora().getHour()]++;
+		}
+		return porHora;
+	}
+
+	public int limpiarMonitoreosSinDatos() {
+		int antes = monitoreos.size();
+		monitoreos.values().removeIf(m -> m.EnergiaGenerada() == 0 && m.CantidadIncidencias() == 0);
+		return antes - monitoreos.size();
+	}
+
+	public boolean nuncaCumplioCuota() {
+		for (Monitoreo m : monitoreos.values())
+			if (cumpleCuota(m)) return false;
+		return true;
+	}
+
+	public HashMap<LocalDateTime, Monitoreo> monitoreos() {
+		
+		return new HashMap<LocalDateTime,Monitoreo>(monitoreos);
+	}
 }

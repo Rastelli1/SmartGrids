@@ -1,6 +1,10 @@
 package smartgrids.Plantas;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.TreeMap;
+import smartgrid.Monitoreos.Monitoreo;
+import smartgrid.Monitoreos.MonitoreoEolico;
 
 public class Eolica extends PlantaRenovable {
 	
@@ -31,6 +35,27 @@ public class Eolica extends PlantaRenovable {
 	@Override
 	public double generacionMinimaParaCumplirCuota() {
 		return capacidadMaxima* eficienciaPromedio;
+	}
+
+	public Map<Integer, Double> horasSinVelocidadMinima() {
+		double[] maxima = new double[24];
+		boolean[] conRegistros = new boolean[24];
+		for (Monitoreo m : monitoreos.values()) {
+			int hora = m.FechaHora().getHour();
+			double viento = ((MonitoreoEolico) m).VelocidadViento();
+			if (!conRegistros[hora] || viento > maxima[hora]) maxima[hora] = viento;
+			conRegistros[hora] = true;
+		}
+		Map<Integer, Double> resultado = new TreeMap<>();
+		for (int hora = 0; hora < 24; hora++)
+			if (conRegistros[hora] && maxima[hora] < velocidadMinimaViento)
+				resultado.put(hora, maxima[hora]);
+		return resultado;
+	}
+	
+	@Override
+	public boolean aceptaMonitoreo(Monitoreo monitoreo) {
+		return monitoreo instanceof MonitoreoEolico;
 	}
 
 }
